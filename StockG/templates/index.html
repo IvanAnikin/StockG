@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="jumbotron">
+    <h1>{{brand_name}}</h1>
+    <p class="lead">Ideal solution for investors</p>
+    <p><a href="{{ url_for('about') }}" class="btn btn-primary btn-large">Find out why &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="input-group rounded">
+            <input type="text" id="stock_name" name="stock_name" placeholder="Stock name" class="form-control rounded" aria-label="Stock name"/>
+
+            <button onclick="stock_info_click()" class="btn btn-light search_btn"><i class="bi bi-search"></i></button>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div id="chartContainer"></div>
+</div>
+{% endblock %}
