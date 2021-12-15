@@ -1,6 +1,6 @@
+import csv
 import yfinance as yf
 import matplotlib.pyplot as plt
-import csv
 import pandas as pd
 import json
 import os

@@ -18,6 +18,7 @@
     <Name>StockG</Name>
     <RootNamespace>StockG</RootNamespace>
     <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
+    <InterpreterId>Global|PythonCore|3.7</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -2485,6 +2486,10 @@
     <Content Include="StockG\Train\Models\predictor\s&amp;p_500\conda_env_v_1_0_0.yml" />
     <Content Include="StockG\Train\Models\predictor\s&amp;p_500\model.pkl" />
     <Content Include="StockG\Train\results\NN.h5" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.6-32" />
+    <InterpreterReference Include="Global|PythonCore|3.7" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Web.targets" />
   <!-- Specify pre- and post-build commands in the BeforeBuild and 
