@@ -13,7 +13,21 @@ dataset_manager = Dataset_Manager.Datasets_Manager(args=params.default_dataset_a
 brand_name = params.general_args['brand_name']
 year = params.general_args['year']
 
+
+# Intro Page
 @app.route('/')
+@app.route("/intro")
+def intro():
+    return render_template(
+        'intro.html',
+        title='Intro',
+        year=year,
+        brand_name = brand_name
+    )
+
+
+# StockG UI
+
 @app.route('/home')
 def home():
     return render_template(
@@ -43,6 +57,9 @@ def about():
         #message='Contacts'
     )
 
+
+# Requst hanglers 
+
 @app.route('/load_dataset', methods=['GET', 'POST'])
 def load_dataset():
 
@@ -63,31 +80,3 @@ def load_company_info():    #!!!!! !!!!! !!!!! !!!!! !!!!! !!!!! !!!!! !!!!! !!!
     except Exception as e:
         return e
 
-
-
-@app.route("/intro")
-def intro():
-    return render_template(
-        'intro.html',
-        title='Intro',
-        year=year,
-        brand_name = brand_name
-    )
-
-
-
-@app.route('/stock_info')
-def stock_info():
-
-    dataset_info = [request.form['stock_name']]
-    
-    dataset=dataset_manager.load_dataset(dataset_info)
-
-    return render_template(
-        'stcok_info.html',
-        title='Stock info',
-        year=year,
-        brand_name = brand_name,
-        dataset=dataset
-        #message='Contacts'
-    )

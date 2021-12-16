@@ -8,16 +8,3 @@ if __name__ == '__main__':
    except ValueError:
        PORT = 5555
    app.run(HOST, PORT)
-   #app.run()#debug=True
-
-
-#from StockG import app
-#app.run()
-
-
-#from flask import Flask
-#app = Flask(__name__)
-#
-#@app.route("/")
-#def hello():
-#    return "Stock G"

@@ -45,7 +45,6 @@
     <Folder Include="StockG\" />
     <Folder Include="StockG\Agents\" />
     <Folder Include="StockG\Managers\" />
-    <Folder Include="StockG\Managers\__pycache__\" />
     <Folder Include="StockG\Presentation\" />
     <Folder Include="StockG\static\" />
     <Folder Include="StockG\static\bootstrap-icons\" />
@@ -103,7 +102,6 @@
     <None Include="StockG - Web Deploy.pubxml" />
     <Content Include="StockG.PublishSettings" />
     <Content Include="StockG\config.json" />
-    <Content Include="StockG\Managers\__pycache__\Dataset_Manager.cpython-37.pyc" />
     <Content Include="StockG\static\bootstrap-icons\123.svg" />
     <Content Include="StockG\static\bootstrap-icons\activity.svg" />
     <Content Include="StockG\static\bootstrap-icons\alarm-fill.svg" />
@@ -1749,20 +1747,10 @@
     <Content Include="StockG\static\intro_assets\vendor\swiper\swiper-bundle.min.js" />
     <Content Include="StockG\static\intro_assets\vendor\waypoints\noframework.waypoints.js" />
     <Content Include="StockG\static\scripts\bootstrap.js" />
-    <Content Include="StockG\static\scripts\bootstrap.min.js" />
-    <Content Include="StockG\static\scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="StockG\static\scripts\jquery-1.10.2.js" />
-    <Content Include="StockG\static\scripts\jquery-1.10.2.min.js" />
-    <Content Include="StockG\static\scripts\jquery-1.10.2.min.map" />
-    <Content Include="StockG\static\scripts\jquery.validate-vsdoc.js" />
-    <Content Include="StockG\static\scripts\jquery.validate.js" />
-    <Content Include="StockG\static\scripts\jquery.validate.min.js" />
-    <Content Include="StockG\static\scripts\jquery.validate.unobtrusive.js" />
-    <Content Include="StockG\static\scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="StockG\static\scripts\modernizr-2.6.2.js" />
     <Content Include="StockG\static\scripts\respond.js" />
-    <Content Include="StockG\static\scripts\respond.min.js" />
-    <Content Include="StockG\static\scripts\_references.js" />
+    <Content Include="StockG\static\scripts\scripts.js" />
     <Content Include="StockG\templates\about.html" />
     <Content Include="StockG\templates\contact.html" />
     <Content Include="StockG\templates\index.html" />
