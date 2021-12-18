@@ -57,6 +57,7 @@
     <Folder Include="StockG\static\intro_assets\img\clients\" />
     <Folder Include="StockG\static\intro_assets\img\portfolio\" />
     <Folder Include="StockG\static\intro_assets\img\team\" />
+    <Folder Include="StockG\static\intro_assets\img\technologies\" />
     <Folder Include="StockG\static\intro_assets\js\" />
     <Folder Include="StockG\static\intro_assets\vendor\" />
     <Folder Include="StockG\static\intro_assets\vendor\aos\" />
@@ -1662,10 +1663,15 @@
     <Content Include="StockG\static\intro_assets\img\portfolio\portfolio-details-2.jpg" />
     <Content Include="StockG\static\intro_assets\img\portfolio\portfolio-details-3.jpg" />
     <Content Include="StockG\static\intro_assets\img\skills.png" />
+    <Content Include="StockG\static\intro_assets\img\team\ivan-a.jpg" />
     <Content Include="StockG\static\intro_assets\img\team\team-1.jpg" />
     <Content Include="StockG\static\intro_assets\img\team\team-2.jpg" />
     <Content Include="StockG\static\intro_assets\img\team\team-3.jpg" />
     <Content Include="StockG\static\intro_assets\img\team\team-4.jpg" />
+    <Content Include="StockG\static\intro_assets\img\technologies\Flask.png" />
+    <Content Include="StockG\static\intro_assets\img\technologies\Python.png" />
+    <Content Include="StockG\static\intro_assets\img\technologies\React.png" />
+    <Content Include="StockG\static\intro_assets\img\technologies\Tensorflow.png" />
     <Content Include="StockG\static\intro_assets\img\why-us.png" />
     <Content Include="StockG\static\intro_assets\js\main.js" />
     <Content Include="StockG\static\intro_assets\vendor\aos\aos.css" />
