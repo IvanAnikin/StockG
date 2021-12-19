@@ -1757,8 +1757,6 @@
     <Content Include="StockG\static\scripts\modernizr-2.6.2.js" />
     <Content Include="StockG\static\scripts\respond.js" />
     <Content Include="StockG\static\scripts\scripts.js" />
-    <Content Include="StockG\templates\about.html" />
-    <Content Include="StockG\templates\contact.html" />
     <Content Include="StockG\templates\index.html" />
     <Content Include="StockG\templates\intro.html" />
     <Content Include="StockG\templates\layout.html" />

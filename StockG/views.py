@@ -15,7 +15,6 @@ year = params.general_args['year']
 
 
 # Intro Page
-@app.route('/')
 @app.route("/intro")
 def intro():
     return render_template(
@@ -27,7 +26,7 @@ def intro():
 
 
 # StockG UI
-
+@app.route('/')
 @app.route('/home')
 def home():
     return render_template(
@@ -36,27 +35,6 @@ def home():
         year=year,
         brand_name = brand_name
     )
-
-@app.route('/contact')
-def contact():
-    return render_template(
-        'contact.html',
-        title='Contact',
-        year=year,
-        brand_name = brand_name
-        #message='Contacts'
-    )
-
-@app.route('/about')
-def about():
-    return render_template(
-        'about.html',
-        title='About',
-        year=year,
-        brand_name = brand_name
-        #message='Contacts'
-    )
-
 
 # Requst hanglers 
 
