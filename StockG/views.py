@@ -9,7 +9,7 @@ from StockG import app
 from StockG.Managers import Dataset_Manager
 from StockG import params
 
-dataset_manager = Dataset_Manager.Datasets_Manager(args=params.default_dataset_args)
+dataset_manager = Dataset_Manager.Datasets_Manager(args=params.dataset_args)
 brand_name = params.general_args['brand_name']
 year = params.general_args['year']
 

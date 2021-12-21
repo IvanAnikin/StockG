@@ -7,7 +7,7 @@ import datetime
 import numpy as np
 
 class Datasets_Manager():
-    def __init__(self, args):
+    def __init__(self, args=[]):
         self.args=args
 
         if 'dataset_info' in self.args or 'dataset_path' in self.args or 'dataset_url' in self.args:
@@ -197,3 +197,14 @@ class Datasets_Manager():
         ax.legend()
         plt.show()
 
+    def visualise_testing_close_diff(self, close, prediction, date):
+
+        fig, ax = plt.subplots(figsize=(16, 9))
+
+        ax.plot(date, close, label="Close")
+        ax.plot(date, prediction, label='Prediction')
+
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Adjusted closing price ($)')
+        ax.legend()
+        plt.show()
