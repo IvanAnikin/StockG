@@ -7,7 +7,7 @@ from StockG.Agents.DQN import DQN
 from StockG.Agents.NN import NN
 from StockG import params
 
-datasets_Manager = Datasets_Manager(args=params.default_dataset_args)
+datasets_Manager = Datasets_Manager(args=params.dataset_args)
 #datasets_Manager.visualise_dataset_close()
 
 dqn_args = params.default_dqn_args

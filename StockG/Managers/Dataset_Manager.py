@@ -10,8 +10,9 @@ class Datasets_Manager():
     def __init__(self, args):
         self.args=args
 
-        if 'dataset_info' in self.args or 'dataset_path' in self.args or 'dataset_url' in self.args: self.dataset=self.load_dataset()
-        if 'preprocess' in self.args: self.dataset=self.preprocess_dataset()
+        if 'dataset_info' in self.args or 'dataset_path' in self.args or 'dataset_url' in self.args:
+            self.dataset=self.load_dataset()
+            if 'preprocess' in self.args: self.preprocessed_dataset=self.preprocess_dataset(self.dataset, self.args['preprocess'])
 
     # LOADING
     def load_dataset(self):
@@ -114,10 +115,11 @@ class Datasets_Manager():
                 dataset.to_csv("{path}/{name}.csv".format(path=destination, name=dataset_info['name']), index=False) #, header=
 
     # PREPROCESSING
-    def preprocess_dataset(self):
+    def preprocess_dataset(self, dataset, args):
         preprocessed = pd.DataFrame()
 
-
+        #for arg in args:
+            # preprocessed.append( ***** )
 
         return preprocessed
 

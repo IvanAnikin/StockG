@@ -2,7 +2,7 @@ from datetime import datetime
 from tensorflow.keras.optimizers import Adam
 from collections import deque
 
-default_dataset_args={
+dataset_args={
     'dataset_path': "E:/VS_Projects/StockG_data/S&P_500/full/SNP_train.csv",
     'dataset_url': "",
     #'dataset_info':{
@@ -10,7 +10,17 @@ default_dataset_args={
     #    'start':'2019-01-01',
     #    'end':'2021-06-12',
     #    'progress': False
-    #}
+    #},
+    'preprocess': [
+        "SMA",
+        # Average True Range
+        # Average Directional Index (Fast and Slow)
+        # Stochastic Oscillators (Fast and Slow)
+        # Relative Strength Index (Fast and Slow)
+        # Moving Average Convergence Divergence
+        # Bollinger Bands
+        # Rate of Change
+    ]
 }
 general_args={
     "brand_name" : "StockG",
