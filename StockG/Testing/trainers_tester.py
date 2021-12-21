@@ -2,10 +2,10 @@
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 import os
 
-from Managers.Datasets_Manager import Datasets_Manager
-from Agents.DQN import DQN
-from Agents.NN import NN
-import params
+from StockG.Managers.Dataset_Manager import Datasets_Manager
+from StockG.Agents.DQN import DQN
+from StockG.Agents.NN import NN
+from StockG import params
 
 datasets_Manager = Datasets_Manager(args=params.default_dataset_args)
 #datasets_Manager.visualise_dataset_close()

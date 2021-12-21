@@ -10,17 +10,24 @@ class Datasets_Manager():
     def __init__(self, args):
         self.args=args
 
-        if 'dataset_info' in self.args: self.dataset=self.load_dataset(dataset_info=self.args['dataset_info'])
+        if 'dataset_info' in self.args or 'dataset_path' in self.args or 'dataset_url' in self.args: self.dataset=self.load_dataset()
+        if 'preprocess' in self.args: self.dataset=self.preprocess_dataset()
 
-    def load_dataset(self, dataset_info):
+    # LOADING
+    def load_dataset(self):
         try:
-            if 'start' not in dataset_info or 'start' not in dataset_info:
-                dataset = yf.download(dataset_info['name'])
+            if self.args['dataset_path'] != "":
+                dataset = pd.read_csv(self.args['dataset_path'])
+
+            # elif self.args['dataset_url'] != "":
             else:
-                dataset = yf.download(dataset_info['name'],
-                                        start=dataset_info['start'],
-                                        end=dataset_info['end'],
-                                        progress=dataset_info['progress'])
+                if 'start' not in self.args['dataset_info'] or 'start' not in self.args:
+                    dataset = yf.download(self.args['dataset_info']['name'])
+                else:
+                    dataset = yf.download(self.args['dataset_info']['name'],
+                                            start=self.args['dataset_info']['start'],
+                                            end=self.args['dataset_info']['end'],
+                                            progress=self.args['dataset_info']['progress'])
         except Exception as e:
             return e
 
@@ -85,7 +92,7 @@ class Datasets_Manager():
                             print("symbol: '{symbol}' | limit: '{limit}'".format(symbol=row['Symbol'], limit=limit[1]))
         self.load_dataset(dataset_info={"name":"SNP", "start":start_string, "end":end_string,'progress': False}).to_csv("{destination}/{name}.csv".format(destination=destination, name="SNP"))
 
-    def load_datasets_csv(self, source, destination, start, end):
+    def save_datasets_csv(self, source, destination, start, end):
         if not os.path.exists(destination):
             os.makedirs(destination)
         with open(source) as csv_file:
@@ -106,6 +113,15 @@ class Datasets_Manager():
                 dataset["Date"] = keys_list
                 dataset.to_csv("{path}/{name}.csv".format(path=destination, name=dataset_info['name']), index=False) #, header=
 
+    # PREPROCESSING
+    def preprocess_dataset(self):
+        preprocessed = pd.DataFrame()
+
+
+
+        return preprocessed
+
+    # COMBINING/SPLITTING
     # not done
     def combine_datasets(self, dir):
         merged = pd.DataFrame()
@@ -125,15 +141,21 @@ class Datasets_Manager():
                 merged.append(columns, ignore_index = True)
         print(merged)
 
-    def split_dataset(self, test_percentage=0.1, path = "C:/Users/ivana/source/repos/InvestMaster/InvestMaster/InvestMaster/Train/data/S&P_500/full", name="SNP"):
-        dataset = pd.read_csv("{path}/{name}.csv".format(path=path, name=name))
+    def split_dataset(self, dataset=[], test_percentage=0.1):
+        if dataset==[]: dataset=self.load_dataset()
         breakpoint = int((1-test_percentage)*len(dataset))
         train = dataset[:breakpoint]
         test = dataset[breakpoint:]
+        return train, test
 
+    def split_dataset_files(self, path = "C:/Users/ivana/source/repos/InvestMaster/InvestMaster/InvestMaster/Train/data/S&P_500/full",
+                            name = "SNP", test_percentage=0.1):
+        dataset = pd.read_csv("{path}/{name}.csv".format(path=path, name=name))
+        train, test = self.split_dataset(dataset=dataset, test_percentage=test_percentage)
         train.to_csv("{path}/{name}_train.csv".format(path=path, name=name), index=False)  # , header=
         test.to_csv("{path}/{name}_test.csv".format(path=path, name=name), index=False)
 
+    # CONVERTING
     def convert_to_json(self, dataset):
         data = []
         key_list = dataset['Close'].keys()
@@ -147,6 +169,7 @@ class Datasets_Manager():
             })
         return data
 
+    # VISUALISATION
     def visualise_dataset_close(self, **dataset):
         if not dataset:
             if self.dataset is None: dataset = self.load_dataset(self.args)
@@ -171,3 +194,4 @@ class Datasets_Manager():
         ax.set_ylabel('Adjusted closing price ($)')
         ax.legend()
         plt.show()
+
