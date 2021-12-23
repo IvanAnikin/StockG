@@ -3,14 +3,14 @@ from tensorflow.keras.optimizers import Adam
 from collections import deque
 
 dataset_args={
-    'dataset_path': "E:/VS_Projects/StockG_data/S&P_500/full/SNP_train.csv",
+    #'dataset_path': "E:/VS_Projects/StockG_data/S&P_500/full/SNP_train.csv",
     'dataset_url': "",
-    #'dataset_info':{
-    #    'name':'MSFT',
-    #    'start':'2019-01-01',
-    #    'end':'2021-06-12',
-    #    'progress': False
-    #},
+    'dataset_info':{
+        'name':'MSFT',
+        #'start':'2019-01-01',
+        #'end':'2021-06-12',
+        #'progress': False
+    },
     'preprocess': [
         "SMA",
         # Average True Range

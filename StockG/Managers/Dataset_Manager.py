@@ -11,28 +11,28 @@ class Datasets_Manager():
         self.args=args
 
         if 'dataset_info' in self.args or 'dataset_path' in self.args or 'dataset_url' in self.args:
-            self.dataset=self.load_dataset()
-            if 'preprocess' in self.args: self.preprocessed_dataset=self.preprocess_dataset(self.dataset, self.args['preprocess'])
+            self.load_dataset()
+            if 'preprocess' in self.args: self.preprocess_dataset()
 
     # LOADING
     def load_dataset(self):
         try:
-            if self.args['dataset_path'] != "":
-                dataset = pd.read_csv(self.args['dataset_path'])
+            if 'dataset_path' in self.args:
+                self.dataset = pd.read_csv(self.args['dataset_path'])
 
-            # elif self.args['dataset_url'] != "":
-            else:
-                if 'start' not in self.args['dataset_info'] or 'start' not in self.args:
-                    dataset = yf.download(self.args['dataset_info']['name'])
+            # elif self.args['dataset_url'] in self.args:
+            elif 'dataset_info' in self.args:
+                if 'start' not in self.args['dataset_info']:
+                    self.dataset = yf.download(self.args['dataset_info']['name'])
                 else:
-                    dataset = yf.download(self.args['dataset_info']['name'],
+                    self.dataset = yf.download(self.args['dataset_info']['name'],
                                             start=self.args['dataset_info']['start'],
                                             end=self.args['dataset_info']['end'],
                                             progress=self.args['dataset_info']['progress'])
         except Exception as e:
             return e
 
-        return dataset
+        #return dataset
 
     def load_datasets_csv_same_interval(self, dir, start, end):
         # FINDING LIMITS
@@ -115,13 +115,13 @@ class Datasets_Manager():
                 dataset.to_csv("{path}/{name}.csv".format(path=destination, name=dataset_info['name']), index=False) #, header=
 
     # PREPROCESSING
-    def preprocess_dataset(self, dataset, args):
+    def preprocess_dataset(self):
         preprocessed = pd.DataFrame()
 
         #for arg in args:
             # preprocessed.append( ***** )
 
-        return preprocessed
+        self.dataset = self.dataset
 
     # COMBINING/SPLITTING
     # not done
