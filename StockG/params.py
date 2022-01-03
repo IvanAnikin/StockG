@@ -3,6 +3,11 @@ from tensorflow.keras.optimizers import Adam
 from collections import deque
 import datetime as dt
 
+expected_mapping = {
+    "SMA": "Close",
+    "SMA_Volume": "Volume"
+}
+
 dataset_args={
     # 'dataset_path': "",
     # 'dataset_url': "",
@@ -10,7 +15,7 @@ dataset_args={
     'dir': "../Datasets",
     'dataset_info':{
         'name': 'MSFT',
-        'start': dt.datetime(2015, 1, 1),
+        'start': dt.datetime(2021, 1, 1),
         'end': dt.date.today(),
         'progress': False
     },

@@ -4,11 +4,8 @@ import csv
 import pandas as pd
 import os
 import numpy as np
+from StockG import params
 
-expected_mapping = {
-    "SMA": "Close",
-    "SMA_Volume": "Volume"
-}
 
 class Datasets_Manager():
     def __init__(self, args):
@@ -156,7 +153,7 @@ class Datasets_Manager():
                     for prop in self.args['X']['windowed_data']:
                         window = []
                         if s == 0:
-                            expected_list = self.dataset[expected_mapping[prop]]
+                            expected_list = self.dataset[params.expected_mapping[prop]]
                             window = expected_list[date_list[index - n]:date_list[index-1]].tolist()
                         else:
                             avg_koeff = self.dataset[f'{prop}_{s + 1}']
@@ -210,7 +207,7 @@ class Datasets_Manager():
     def add_means(self, prop):
         r = self.args["r"]
         for i in range(2, int(len(self.dataset) / r) + 1):
-            self.dataset[f'{prop}_{i}'] = self.dataset[expected_mapping[prop]].transform(lambda x: x.rolling(window=i).mean())
+            self.dataset[f'{prop}_{i}'] = self.dataset[params.expected_mapping[prop]].transform(lambda x: x.rolling(window=i).mean())
         print(self.dataset.keys())
 
         # start = self.args['dataset_info']['start']
