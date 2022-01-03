@@ -3,16 +3,21 @@ import matplotlib.pyplot as plt
 import csv
 import pandas as pd
 import os
-import datetime
 import numpy as np
 
+expected_mapping = {
+    "SMA": "Close",
+    "SMA_Volume": "Volume"
+}
+
 class Datasets_Manager():
-    def __init__(self, args=[]):
+    def __init__(self, args):
         self.args=args
 
-        if 'dataset_info' in self.args or 'dataset_path' in self.args or 'dataset_url' in self.args:
-            self.load_dataset()
-            if 'preprocess' in self.args: self.preprocess_dataset()
+        # if 'dataset_info' in self.args or 'dataset_path' in self.args or 'dataset_url' in self.args:
+        #     print(self.args)
+        #     self.load_dataset()
+            # if 'preprocess' in self.args: self.preprocess_dataset()
 
     # LOADING
     def load_dataset(self):
@@ -22,6 +27,7 @@ class Datasets_Manager():
 
             # elif self.args['dataset_url'] in self.args:
             elif 'dataset_info' in self.args:
+                print("Reading data for " + self.args['dataset_info']['name'])
                 if 'start' not in self.args['dataset_info']:
                     self.dataset = yf.download(self.args['dataset_info']['name'])
                 else:
@@ -31,8 +37,6 @@ class Datasets_Manager():
                                             progress=self.args['dataset_info']['progress'])
         except Exception as e:
             return e
-
-        #return dataset
 
     def load_datasets_csv_same_interval(self, dir, start, end):
         # FINDING LIMITS
@@ -117,11 +121,55 @@ class Datasets_Manager():
     # PREPROCESSING
     def preprocess_dataset(self):
         preprocessed = pd.DataFrame()
+        n = self.args["n"]
+        r = self.args["r"]
 
-        #for arg in args:
-            # preprocessed.append( ***** )
+        date_list = self.dataset['Close'].keys()
+        l = len(date_list)
 
-        self.dataset = self.dataset
+        # adj_close_list = self.dataset['Adj Close']
+
+        columns = ['Date', 'Index', 'Close', 'Future']#, 'Window']
+
+        for prop in self.args['X']['windowed_data']:
+            # to_call = f'add_{prop}_means'
+            # print("Calling {}".format(to_call))
+            # getattr(self, to_call)()
+            self.add_means(prop)
+            columns.append(prop)
+
+        for index in range(int(l - (l / r))):
+            date = date_list[index]
+            # step = int(index / n)
+            round = int(index / r)
+            left = index % r
+            # print("Round:" + str(round) + "\tLeftover:" + str(left) + "\tStep:" + str(step))
+
+            if index >= n:
+                for s in range(round):
+                    # print(s)
+                    predicted_index = index + s + 1
+                    row = self.dataset.iloc[predicted_index]
+                    close = row['Close']
+                    list_of_data = [date, index, close, predicted_index]
+
+                    for prop in self.args['X']['windowed_data']:
+                        window = []
+                        if s == 0:
+                            expected_list = self.dataset[expected_mapping[prop]]
+                            window = expected_list[date_list[index - n]:date_list[index-1]].tolist()
+                        else:
+                            avg_koeff = self.dataset[f'{prop}_{s + 1}']
+                            for z in range(n):
+                                curr = index - (s + 1)*(n - z) + s
+                                window.append(avg_koeff.iloc[curr])
+                        list_of_data.append(window)
+
+                    df1 = pd.DataFrame([list_of_data], columns=columns)
+                    preprocessed = preprocessed.append(df1)
+
+        preprocessed.to_csv(self.args['store_path'], index=False)
+
 
     # COMBINING/SPLITTING
     # not done
@@ -157,18 +205,52 @@ class Datasets_Manager():
         train.to_csv("{path}/{name}_train.csv".format(path=path, name=name), index=False)  # , header=
         test.to_csv("{path}/{name}_test.csv".format(path=path, name=name), index=False)
 
+
+    # Add SMA means
+    def add_means(self, prop):
+        r = self.args["r"]
+        for i in range(2, int(len(self.dataset) / r) + 1):
+            self.dataset[f'{prop}_{i}'] = self.dataset[expected_mapping[prop]].transform(lambda x: x.rolling(window=i).mean())
+        print(self.dataset.keys())
+
+        # start = self.args['dataset_info']['start']
+        # end = self.args['dataset_info']['end']
+        # fig = plt.figure(facecolor='white', figsize=(20, 10))
+        #
+        # ax0 = plt.subplot2grid((6, 4), (1, 0), rowspan=4, colspan=4)
+        # ax0.plot(self.dataset.loc[start:end, ['Close', 'SMA_2', 'SMA_12', 'SMA_25']])
+        # ax0.set_facecolor('ghostwhite')
+        # ax0.legend(['Close', 'SMA_2', 'SMA_12', 'SMA_25'], ncol=3, loc='upper left', fontsize=15)
+        # plt.title("Stock Price, Slow and Fast Moving Average", fontsize=20)
+        #
+        # plt.subplots_adjust(left=.09, bottom=.09, right=1, top=.95, wspace=.20, hspace=0)
+        # plt.show()
+
+
     # CONVERTING
-    def convert_to_json(self, dataset):
+    def convert_to_json(self):
         data = []
-        key_list = dataset['Close'].keys()
-        for i in range(len(dataset)):
-            data.append({
-                "date": str(key_list[i].strftime("%Y-%m-%d")),
-                "open": dataset['Open'][i],
-                "high": dataset['High'][i],
-                "low": dataset['Low'][i],
-                "close": dataset['Close'][i]
-            })
+        key_list = self.dataset['Close'].keys()
+        l = len(self.dataset)
+        n = self.args["n"]
+        max_koeff = int(l / n)
+        # print(max_koeff)
+        for i in range(l):
+            item = {"date": str(key_list[i].strftime("%Y-%m-%d")),
+                "open": self.dataset['Open'][i],
+                "high": self.dataset['High'][i],
+                "low": self.dataset['Low'][i],
+                "close": self.dataset['Close'][i]}
+            for j in range(2, max_koeff + 1):
+                item[f'SMA_{j}'] = self.dataset[f'SMA_{j}'][i]
+            data.append(item)
+            # data.append({
+            #     "date": str(key_list[i].strftime("%Y-%m-%d")),
+            #     "open": self.dataset['Open'][i],
+            #     "high": self.dataset['High'][i],
+            #     "low": self.dataset['Low'][i],
+            #     "close": self.dataset['Close'][i]
+            # })
         return data
 
     # VISUALISATION

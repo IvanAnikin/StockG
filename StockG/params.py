@@ -1,26 +1,38 @@
 from datetime import datetime
 from tensorflow.keras.optimizers import Adam
 from collections import deque
+import datetime as dt
 
 dataset_args={
-    #'dataset_path': "E:/VS_Projects/StockG_data/S&P_500/full/SNP_train.csv",
-    'dataset_url': "",
+    # 'dataset_path': "",
+    # 'dataset_url': "",
+    'store_path': "",
+    'dir': "../Datasets",
     'dataset_info':{
-        'name':'MSFT',
-        #'start':'2019-01-01',
-        #'end':'2021-06-12',
-        #'progress': False
+        'name': 'MSFT',
+        'start': dt.datetime(2015, 1, 1),
+        'end': dt.date.today(),
+        'progress': False
     },
-    'preprocess': [
-        "SMA",
-        # Average True Range
-        # Average Directional Index (Fast and Slow)
-        # Stochastic Oscillators (Fast and Slow)
-        # Relative Strength Index (Fast and Slow)
-        # Moving Average Convergence Divergence
-        # Bollinger Bands
-        # Rate of Change
-    ]
+    'X':{
+        'fundamental_data': {
+
+        },
+        'windowed_data': [
+            "SMA",
+            "SMA_Volume"
+            # Average True Range
+            # Average Directional Index (Fast and Slow)
+            # Stochastic Oscillators (Fast and Slow)
+            # Relative Strength Index (Fast and Slow)
+            # Moving Average Convergence Divergence
+            # Bollinger Bands
+            # Rate of Change
+        ]
+    },
+    'Y': 'Adj Close',
+    'n': 10,
+    'r': 10
 }
 general_args={
     "brand_name" : "StockG",

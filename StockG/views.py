@@ -42,8 +42,8 @@ def home():
 def load_dataset():
 
     dataset_info = {'name':request.args.get('name')}
-    
-    dataset = dataset_manager.convert_to_json(dataset_manager.load_dataset(dataset_info))
+    dataset_manager.load_dataset(dataset_info)
+    dataset = dataset_manager.convert_to_json()
     try:
         return json.dumps(dataset)
     except Exception as e:
