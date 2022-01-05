@@ -72,6 +72,42 @@ function stock_info_click() {
     xmlHttp.send(null);
 }
 
+function stock_signals_click() {
+    var stock_name = document.getElementById("stock_name").value;
+
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+            console.log(":)")
+        }
+    }
+    window.open(window.location.origin + "/technical_signals?name=" + stock_name, '_blank').focus();
+    xmlHttp.send(null);
+
+    //document.getElementById("imageSignals").src = window.location.origin + "/load_technical_signals?name=" + stock_name
+
+    //var xmlHttp = new XMLHttpRequest();
+    //xmlHttp.onreadystatechange = function () {
+    //    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+    //
+    //        //var data = xmlHttp.responseText;
+    //        //console.log(data)
+    //        //data =
+    //        console.log(xmlHttp.respose);
+    //        var imgSrc = URL.createObjectURL(xmlHttp.respose);
+    //
+    //        var $img = $( '<img/>', {
+    //            "alt": "test image",
+    //            "src": imgSrc
+    //        } ).appendTo( $( '#imageContainer' ) );
+    //        window.URL.revokeObjectURL( imgSrc );
+    //
+    //    }
+    //}
+    //xmlHttp.open("GET", window.location.origin + "/load_technical_signals?name=" + stock_name, true); // true for asynchronous
+    //xmlHttp.send(null);
+}
+
 
 function calculateSMA(dps, count) {
     var avg = function (dps) {
