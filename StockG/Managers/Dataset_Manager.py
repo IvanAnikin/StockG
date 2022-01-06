@@ -132,14 +132,19 @@ class Datasets_Manager():
             # to_call = f'add_{prop}_means'
             # print("Calling {}".format(to_call))
             # getattr(self, to_call)()
-            self.add_means(prop)
+            if prop == 'SMA' or prop == 'SMA_Volume':
+                self.add_means(prop)
+            elif prop == 'ATR':
+                self.add_tr()
+            elif prop == 'ADX':
+                self.add_dx()
             columns.append(prop)
 
         for index in range(int(l - (l / r))):
             date = date_list[index]
             # step = int(index / n)
             round = int(index / r)
-            left = index % r
+            # left = index % r
             # print("Round:" + str(round) + "\tLeftover:" + str(left) + "\tStep:" + str(step))
 
             if index >= n:
@@ -156,12 +161,19 @@ class Datasets_Manager():
                             expected_list = self.dataset[params.expected_mapping[prop]]
                             window = expected_list[date_list[index - n]:date_list[index-1]].tolist()
                         else:
-                            avg_koeff = self.dataset[f'{prop}_{s + 1}']
+                            if prop == 'SMA' or prop == 'SMA_Volume' or prop == 'ATR' or prop == 'ADX':
+                                initial_data = self.dataset[f'{prop}_{s + 1}']
+                                # for z in range(n):
+                                #     curr = index - (s + 1)*(n - z) + s
+                                #     window.append(initial_data.iloc[curr])
+                            # elif prop == 'ATR':
+                            #     initial_data = self.dataset[params.expected_mapping[prop]] / self.dataset[f'ATR_{s + 1}']
+                            else:
+                                initial_data = pd.DataFrame()
                             for z in range(n):
                                 curr = index - (s + 1)*(n - z) + s
-                                window.append(avg_koeff.iloc[curr])
+                                window.append(initial_data.iloc[curr])
                         list_of_data.append(window)
-
                     df1 = pd.DataFrame([list_of_data], columns=columns)
                     preprocessed = preprocessed.append(df1)
 
@@ -188,6 +200,7 @@ class Datasets_Manager():
                 merged.append(columns, ignore_index = True)
         print(merged)
 
+
     def split_dataset(self, dataset=[], test_percentage=0.1):
         if dataset==[]: dataset=self.load_dataset()
         breakpoint = int((1-test_percentage)*len(dataset))
@@ -195,12 +208,75 @@ class Datasets_Manager():
         test = dataset[breakpoint:]
         return train, test
 
+
     def split_dataset_files(self, path = "C:/Users/ivana/source/repos/InvestMaster/InvestMaster/InvestMaster/Train/data/S&P_500/full",
                             name = "SNP", test_percentage=0.1):
         dataset = pd.read_csv("{path}/{name}.csv".format(path=path, name=name))
         train, test = self.split_dataset(dataset=dataset, test_percentage=test_percentage)
         train.to_csv("{path}/{name}_train.csv".format(path=path, name=name), index=False)  # , header=
         test.to_csv("{path}/{name}_test.csv".format(path=path, name=name), index=False)
+
+
+    def wilder(self, data, periods):
+        start = np.where(~np.isnan(data))[0][0]  # Check if nans present in beginning
+        Wilder = np.array([np.nan] * len(data))
+        Wilder[start + periods - 1] = data[start:(start + periods)].mean()  # Simple Moving Average
+        for i in range(start + periods, len(data)):
+            Wilder[i] = (Wilder[i - 1] * (periods - 1) + data[i]) / periods  # Wilder Smoothing
+        return (Wilder)
+
+
+    def add_tr(self):
+        self.dataset['prev_close'] = self.dataset['Close'].shift(1)
+        self.dataset['prev_close'].iloc[0] = self.dataset['Close'].iloc[0]
+        self.dataset['TR'] = np.maximum((self.dataset['High'] - self.dataset['Low']),
+                                        np.maximum(abs(self.dataset['High'] - self.dataset['prev_close']),
+                                                   abs(self.dataset['prev_close'] - self.dataset['Low'])))
+        # TR_data = self.dataset.copy()
+        r = self.args["r"]
+        for i in range(2, int(len(self.dataset) / r) + 1):
+            self.dataset[f'ATR_{i}'] = self.wilder(self.dataset['TR'], i)
+            # self.dataset['ATR_15'] = self.wilder(self.dataset['TR'], 15)
+        print(self.dataset.keys())
+
+
+    def add_dx(self):
+        ADX_data = self.dataset.copy()
+        ADX_data['prev_high'] = self.dataset['High'].shift(1)
+        ADX_data['prev_high'].iloc[0] = self.dataset['High'].iloc[0]
+        ADX_data['prev_low'] = self.dataset['Low'].shift(1)
+        ADX_data['prev_low'].iloc[0] = self.dataset['Low'].iloc[0]
+
+        ADX_data['+DM'] = np.where(~np.isnan(ADX_data.prev_high),
+                                   np.where((self.dataset['High'] > ADX_data['prev_high']) &
+                                            (((self.dataset['High'] - ADX_data['prev_high']) > (
+                                                    ADX_data['prev_low'] - self.dataset['Low']))),
+                                            self.dataset['High'] - ADX_data['prev_high'],0), np.nan)
+
+        ADX_data['-DM'] = np.where(~np.isnan(ADX_data.prev_low),
+                                   np.where((ADX_data['prev_low'] > self.dataset['Low']) &
+                                            (((ADX_data['prev_low'] - self.dataset['Low']) > (
+                                                    self.dataset['High'] - ADX_data['prev_high']))),
+                                            ADX_data['prev_low'] - self.dataset['Low'],0), np.nan)
+
+        ADX_data['+DI'] = (ADX_data['+DM'] / ADX_data['TR']) * 100
+        ADX_data['-DI'] = (ADX_data['-DM'] / ADX_data['TR']) * 100
+        self.dataset['DX'] = np.round(abs(ADX_data['+DI'] - ADX_data['-DI']) / (ADX_data['+DI'] + ADX_data['-DI']) * 100)
+
+        r = self.args["r"]
+        for i in range(2, int(len(self.dataset) / r) + 1):
+            # ADX_data = all_data[all_data.symbol == i].copy()
+            ADX_data[f'+DM_{i}'] = self.wilder(ADX_data['+DM'], i)
+            ADX_data[f'-DM_{i}'] = self.wilder(ADX_data['-DM'], i)
+
+            ADX_data[f'+DI_{i}'] = (ADX_data[f'+DM_{i}'] / ADX_data[f'ATR_{i}']) * 100
+            ADX_data[f'-DI_{i}'] = (ADX_data[f'-DM_{i}'] / ADX_data[f'ATR_{i}']) * 100
+
+            self.dataset[f'DX_{i}'] = (
+                np.round(abs(ADX_data[f'+DI_{i}'] - ADX_data[f'-DI_{i}']) / (ADX_data[f'+DI_{i}'] + ADX_data[f'-DI_{i}']) * 100))
+
+            self.dataset[f'ADX_{i}'] = self.wilder(self.dataset[f'DX_{i}'], i)
+        print(self.dataset.keys())
 
 
     # Add SMA means

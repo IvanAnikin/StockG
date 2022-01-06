@@ -5,7 +5,9 @@ import datetime as dt
 
 expected_mapping = {
     "SMA": "Close",
-    "SMA_Volume": "Volume"
+    "SMA_Volume": "Volume",
+    "ATR": "TR",
+    "ADX": "DX"
 }
 
 dataset_args={
@@ -25,7 +27,9 @@ dataset_args={
         },
         'windowed_data': [
             "SMA",
-            "SMA_Volume"
+            "SMA_Volume",
+            "ATR",
+            "ADX"
             # Average True Range
             # Average Directional Index (Fast and Slow)
             # Stochastic Oscillators (Fast and Slow)
