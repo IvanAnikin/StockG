@@ -19,10 +19,9 @@ class Datasets_Manager():
     # LOADING
     def load_dataset(self):
         try:
-            if 'dataset_path' in self.args:
-                self.dataset = pd.read_csv(self.args['dataset_path'])
-
             # elif self.args['dataset_url'] in self.args:
+            if 'dataset_path' in self.args:
+                self.dataset = pd.read_csv(self.args['dataset_path'
             elif 'dataset_info' in self.args:
                 print("Reading data for " + self.args['dataset_info']['name'])
                 if 'start' not in self.args['dataset_info']:
@@ -32,6 +31,9 @@ class Datasets_Manager():
                                             start=self.args['dataset_info']['start'],
                                             end=self.args['dataset_info']['end'],
                                             progress=self.args['dataset_info']['progress'])
+            elif 'dataset_path' in self.args:
+                self.dataset = pd.read_csv(self.args['dataset_path'])
+
         except Exception as e:
             return e
 
