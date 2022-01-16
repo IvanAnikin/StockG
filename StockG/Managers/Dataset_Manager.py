@@ -2,7 +2,7 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
-import os
+import os, re
 import numpy as np
 from StockG import params
 
@@ -21,7 +21,7 @@ class Datasets_Manager():
         try:
             # elif self.args['dataset_url'] in self.args:
             if 'dataset_path' in self.args:
-                self.dataset = pd.read_csv(self.args['dataset_path'
+                self.dataset = pd.read_csv(self.args['dataset_path'])
             elif 'dataset_info' in self.args:
                 print("Reading data for " + self.args['dataset_info']['name'])
                 if 'start' not in self.args['dataset_info']:
@@ -138,8 +138,9 @@ class Datasets_Manager():
                 self.add_means(prop)
             elif prop == 'ATR':
                 self.add_tr()
-            elif prop == 'ADX':
-                self.add_dx()
+            elif prop in ['ADX_15', 'ADX_25']:
+                ad_value = int(re.search('(\d+)', prop).group(0))
+                self.add_dx(ad_value)
             columns.append(prop)
 
         for index in range(int(l - (l / r))):
@@ -159,22 +160,28 @@ class Datasets_Manager():
 
                     for prop in self.args['X']['windowed_data']:
                         window = []
-                        if s == 0:
-                            expected_list = self.dataset[params.expected_mapping[prop]]
-                            window = expected_list[date_list[index - n]:date_list[index-1]].tolist()
-                        else:
-                            if prop == 'SMA' or prop == 'SMA_Volume' or prop == 'ATR' or prop == 'ADX':
-                                initial_data = self.dataset[f'{prop}_{s + 1}']
-                                # for z in range(n):
-                                #     curr = index - (s + 1)*(n - z) + s
-                                #     window.append(initial_data.iloc[curr])
-                            # elif prop == 'ATR':
-                            #     initial_data = self.dataset[params.expected_mapping[prop]] / self.dataset[f'ATR_{s + 1}']
+                        if prop in ['SMA', 'SMA_Volume', 'ATR']:
+                            if s == 0:
+                                expected_list = self.dataset[params.expected_mapping[prop]]
+                                window = expected_list[date_list[index - n]:date_list[index - 1]].tolist()
                             else:
-                                initial_data = pd.DataFrame()
-                            for z in range(n):
-                                curr = index - (s + 1)*(n - z) + s
-                                window.append(initial_data.iloc[curr])
+                                initial_data = self.dataset[f'{prop}_{s + 1}']
+                                for z in range(n):
+                                    curr = index - s * (n - z - 1)
+                                    window.append(initial_data.iloc[curr])
+                        elif prop in ['ADX_15', 'ADX_25']:
+                            ad_value = int(re.search('(\d+)', prop).group(0))
+                            if index < 15 * r + ad_value:
+                                expected_list = self.dataset[params.expected_mapping[prop]]
+                                window = expected_list[date_list[index - n]:date_list[index - 1]].tolist()
+                            else:
+                                initial_data = self.dataset[prop]
+                                for z in range(n):
+                                    curr = index - s * (n - z - 1)
+                                    window.append(initial_data.iloc[curr])
+                        # else:
+                        #     initial_data = pd.DataFrame()
+
                         list_of_data.append(window)
                     df1 = pd.DataFrame([list_of_data], columns=columns)
                     preprocessed = preprocessed.append(df1)
@@ -234,51 +241,73 @@ class Datasets_Manager():
         self.dataset['TR'] = np.maximum((self.dataset['High'] - self.dataset['Low']),
                                         np.maximum(abs(self.dataset['High'] - self.dataset['prev_close']),
                                                    abs(self.dataset['prev_close'] - self.dataset['Low'])))
-        # TR_data = self.dataset.copy()
+        TR_data = self.dataset.copy()
         r = self.args["r"]
         for i in range(2, int(len(self.dataset) / r) + 1):
-            self.dataset[f'ATR_{i}'] = self.wilder(self.dataset['TR'], i)
-            # self.dataset['ATR_15'] = self.wilder(self.dataset['TR'], 15)
+            self.dataset[f'ATR_{i}'] = self.wilder(TR_data['TR'], i)
         print(self.dataset.keys())
 
+        # start = self.args['dataset_info']['start']
+        # end = self.args['dataset_info']['end']
+        # fig = plt.figure(facecolor='white', figsize=(20, 10))
+        #
+        # ax0 = plt.subplot2grid((6, 4), (1, 0), rowspan=4, colspan=4)
+        # ax0.plot(self.dataset.loc[start:end, ['ATR_5', 'ATR_14', 'ATR_25']])
+        # ax0.set_facecolor('ghostwhite')
+        # ax0.legend(['ATR_4', 'ATR_14', 'ATR_25'], ncol=3, loc='upper left', fontsize=15)
+        # plt.title("Average True Range", fontsize=20)
+        #
+        # plt.subplots_adjust(left=.09, bottom=.09, right=1, top=.95, wspace=.20, hspace=0)
+        # plt.show()
 
-    def add_dx(self):
+
+    def add_dx(self, i):
         ADX_data = self.dataset.copy()
         ADX_data['prev_high'] = self.dataset['High'].shift(1)
-        ADX_data['prev_high'].iloc[0] = self.dataset['High'].iloc[0]
         ADX_data['prev_low'] = self.dataset['Low'].shift(1)
-        ADX_data['prev_low'].iloc[0] = self.dataset['Low'].iloc[0]
 
-        ADX_data['+DM'] = np.where(~np.isnan(ADX_data.prev_high),
+        ADX_data['pDM'] = np.where(~np.isnan(ADX_data.prev_high),
                                    np.where((self.dataset['High'] > ADX_data['prev_high']) &
                                             (((self.dataset['High'] - ADX_data['prev_high']) > (
                                                     ADX_data['prev_low'] - self.dataset['Low']))),
                                             self.dataset['High'] - ADX_data['prev_high'],0), np.nan)
 
-        ADX_data['-DM'] = np.where(~np.isnan(ADX_data.prev_low),
+        ADX_data['mDM'] = np.where(~np.isnan(ADX_data.prev_low),
                                    np.where((ADX_data['prev_low'] > self.dataset['Low']) &
                                             (((ADX_data['prev_low'] - self.dataset['Low']) > (
                                                     self.dataset['High'] - ADX_data['prev_high']))),
-                                            ADX_data['prev_low'] - self.dataset['Low'],0), np.nan)
+                                             ADX_data['prev_low'] - self.dataset['Low'],0), np.nan)
 
-        ADX_data['+DI'] = (ADX_data['+DM'] / ADX_data['TR']) * 100
-        ADX_data['-DI'] = (ADX_data['-DM'] / ADX_data['TR']) * 100
-        self.dataset['DX'] = np.round(abs(ADX_data['+DI'] - ADX_data['-DI']) / (ADX_data['+DI'] + ADX_data['-DI']) * 100)
+        ADX_data['pDI'] = (ADX_data['pDM'] / ADX_data['TR']) * 100
+        ADX_data['mDI'] = (ADX_data['mDM'] / ADX_data['TR']) * 100
+        self.dataset['DX'] = np.where(ADX_data['pDI'] == 0, 0, 0)
 
-        r = self.args["r"]
-        for i in range(2, int(len(self.dataset) / r) + 1):
-            # ADX_data = all_data[all_data.symbol == i].copy()
-            ADX_data[f'+DM_{i}'] = self.wilder(ADX_data['+DM'], i)
-            ADX_data[f'-DM_{i}'] = self.wilder(ADX_data['-DM'], i)
+        ADX_data[f'pDM_{i}'] = self.wilder(ADX_data['pDM'], i)
+        ADX_data[f'mDM_{i}'] = self.wilder(ADX_data['mDM'], i)
 
-            ADX_data[f'+DI_{i}'] = (ADX_data[f'+DM_{i}'] / ADX_data[f'ATR_{i}']) * 100
-            ADX_data[f'-DI_{i}'] = (ADX_data[f'-DM_{i}'] / ADX_data[f'ATR_{i}']) * 100
+        ADX_data[f'pDI_{i}'] = (ADX_data[f'pDM_{i}'] / ADX_data[f'ATR_{i}']) * 100
+        ADX_data[f'mDI_{i}'] = (ADX_data[f'mDM_{i}'] / ADX_data[f'ATR_{i}']) * 100
 
-            self.dataset[f'DX_{i}'] = (
-                np.round(abs(ADX_data[f'+DI_{i}'] - ADX_data[f'-DI_{i}']) / (ADX_data[f'+DI_{i}'] + ADX_data[f'-DI_{i}']) * 100))
+        ADX_data[f'DX_{i}'] = (
+            np.round(abs(ADX_data[f'pDI_{i}'] - ADX_data[f'mDI_{i}']) / (ADX_data[f'pDI_{i}'] + ADX_data[f'mDI_{i}']) * 100))
 
-            self.dataset[f'ADX_{i}'] = self.wilder(self.dataset[f'DX_{i}'], i)
+        self.dataset[f'ADX_{i}'] = self.wilder(ADX_data[f'DX_{i}'], i)
+
         print(self.dataset.keys())
+
+        # ADX_data.to_csv('ADX.csv', index=False)
+        # start = self.args['dataset_info']['start']
+        # end = self.args['dataset_info']['end']
+        # fig = plt.figure(facecolor='white', figsize=(20, 10))
+        #
+        # ax0 = plt.subplot2grid((6, 4), (1, 0), rowspan=4, colspan=4)
+        # ax0.plot(self.dataset.loc[start:end, [f'ADX_{i}']])
+        # ax0.set_facecolor('ghostwhite')
+        # ax0.legend([f'ADX_{i}'], ncol=3, loc='upper left', fontsize=15)
+        # plt.title("Average directional Index", fontsize=20)
+        #
+        # plt.subplots_adjust(left=.09, bottom=.09, right=1, top=.95, wspace=.20, hspace=0)
+        # plt.show()
 
 
     # Add SMA means
