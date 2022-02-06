@@ -8,7 +8,9 @@ expected_mapping = {
     "SMA_Volume": "Volume",
     "ATR": "TR",
     "ADX_15": "DX",
-    "ADX_25": "DX"
+    "ADX_25": "DX",
+    "ST": "ST",
+    "RSI": "Diff"
 }
 
 dataset_args={
@@ -31,7 +33,9 @@ dataset_args={
             "SMA_Volume",
             "ATR",
             "ADX_15",
-            "ADX_25"
+            "ADX_25",
+            "ST",
+            "RSI"
             # Average True Range
             # Average Directional Index (Fast and Slow)
             # Stochastic Oscillators (Fast and Slow)

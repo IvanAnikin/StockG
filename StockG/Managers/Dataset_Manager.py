@@ -138,6 +138,10 @@ class Datasets_Manager():
                 self.add_means(prop)
             elif prop == 'ATR':
                 self.add_tr()
+            elif prop == 'ST':
+                self.add_stochastic()
+            elif prop == 'RSI':
+                self.add_diff()
             elif prop in ['ADX_15', 'ADX_25']:
                 ad_value = int(re.search('(\d+)', prop).group(0))
                 self.add_dx(ad_value)
@@ -160,7 +164,7 @@ class Datasets_Manager():
 
                     for prop in self.args['X']['windowed_data']:
                         window = []
-                        if prop in ['SMA', 'SMA_Volume', 'ATR']:
+                        if prop in ['SMA', 'SMA_Volume', 'ATR', 'ST', 'RSI']:
                             if s == 0:
                                 expected_list = self.dataset[params.expected_mapping[prop]]
                                 window = expected_list[date_list[index - n]:date_list[index - 1]].tolist()
@@ -235,6 +239,43 @@ class Datasets_Manager():
         return (Wilder)
 
 
+    def add_stochastic(self):
+        r = self.args["r"]
+        self.dataset['ST'] = ((self.dataset['Close'] - self.dataset['Low']) / (
+                    self.dataset['High'] - self.dataset['Low'])) * 100
+        for i in range(2, int(len(self.dataset) / r) + 1):
+            self.dataset[f'Lowest_{i}D'] = self.dataset['Low'].transform(lambda x: x.rolling(window=i).min())
+            self.dataset[f'High_{i}D'] = self.dataset['High'].transform(lambda x: x.rolling(window=i).max())
+
+            self.dataset[f'Stochastic_{i}'] = ((self.dataset['Close'] - self.dataset[f'Lowest_{i}D']) / (
+                    self.dataset[f'High_{i}D'] - self.dataset[f'Lowest_{i}D'])) * 100
+
+            self.dataset[f'ST_{i}'] = self.dataset[f'Stochastic_{i}'].rolling(window=i).mean()
+        print(self.dataset.keys())
+
+
+    def add_diff(self):
+        RSI_data = self.dataset.copy()
+        r = self.args["r"]
+        self.dataset['Diff'] = RSI_data['Close'].transform(lambda x: x.diff())
+        self.dataset['Diff'] = np.where(np.isnan(self.dataset['Diff']),0, self.dataset['Diff'])
+
+        RSI_data['Up'] = self.dataset['Diff']
+        RSI_data.loc[(RSI_data['Up'] < 0), 'Up'] = 0
+
+        RSI_data['Down'] = self.dataset['Diff']
+        RSI_data.loc[(RSI_data['Down'] > 0), 'Down'] = 0
+        RSI_data['Down'] = abs(RSI_data['Down'])
+
+        self.dataset['Diff'] = abs(self.dataset['Diff'])
+
+        for i in range(2, int(len(self.dataset) / r) + 1):
+            RSI_data[f'avg_{i}up'] = RSI_data['Up'].transform(lambda x: x.rolling(window=5).mean())
+            RSI_data[f'avg_{i}down'] = RSI_data['Down'].transform(lambda x: x.rolling(window=5).mean())
+            RSI_data[f'RS_{i}'] = RSI_data[f'avg_{i}up'] / RSI_data[f'avg_{i}down']
+            self.dataset[f'RSI_{i}'] = 100 - (100 / (1 + RSI_data[f'RS_{i}']))
+
+
     def add_tr(self):
         self.dataset['prev_close'] = self.dataset['Close'].shift(1)
         self.dataset['prev_close'].iloc[0] = self.dataset['Close'].iloc[0]
@@ -246,19 +287,6 @@ class Datasets_Manager():
         for i in range(2, int(len(self.dataset) / r) + 1):
             self.dataset[f'ATR_{i}'] = self.wilder(TR_data['TR'], i)
         print(self.dataset.keys())
-
-        # start = self.args['dataset_info']['start']
-        # end = self.args['dataset_info']['end']
-        # fig = plt.figure(facecolor='white', figsize=(20, 10))
-        #
-        # ax0 = plt.subplot2grid((6, 4), (1, 0), rowspan=4, colspan=4)
-        # ax0.plot(self.dataset.loc[start:end, ['ATR_5', 'ATR_14', 'ATR_25']])
-        # ax0.set_facecolor('ghostwhite')
-        # ax0.legend(['ATR_4', 'ATR_14', 'ATR_25'], ncol=3, loc='upper left', fontsize=15)
-        # plt.title("Average True Range", fontsize=20)
-        #
-        # plt.subplots_adjust(left=.09, bottom=.09, right=1, top=.95, wspace=.20, hspace=0)
-        # plt.show()
 
 
     def add_dx(self, i):
@@ -316,19 +344,6 @@ class Datasets_Manager():
         for i in range(2, int(len(self.dataset) / r) + 1):
             self.dataset[f'{prop}_{i}'] = self.dataset[params.expected_mapping[prop]].transform(lambda x: x.rolling(window=i).mean())
         print(self.dataset.keys())
-
-        # start = self.args['dataset_info']['start']
-        # end = self.args['dataset_info']['end']
-        # fig = plt.figure(facecolor='white', figsize=(20, 10))
-        #
-        # ax0 = plt.subplot2grid((6, 4), (1, 0), rowspan=4, colspan=4)
-        # ax0.plot(self.dataset.loc[start:end, ['Close', 'SMA_2', 'SMA_12', 'SMA_25']])
-        # ax0.set_facecolor('ghostwhite')
-        # ax0.legend(['Close', 'SMA_2', 'SMA_12', 'SMA_25'], ncol=3, loc='upper left', fontsize=15)
-        # plt.title("Stock Price, Slow and Fast Moving Average", fontsize=20)
-        #
-        # plt.subplots_adjust(left=.09, bottom=.09, right=1, top=.95, wspace=.20, hspace=0)
-        # plt.show()
 
 
     # CONVERTING
